@@ -95,9 +95,12 @@ export default defineConfig((config) => {
       target: 'esnext',
       sourcemap: 'inline',
     },
+    optimizeDeps: {
+      include: ['react', 'react-dom', 'react-dom/server'],
+    },
     plugins: [
       nodePolyfills({
-        include: ['buffer', 'process', 'util', 'stream', 'path', 'util/types'],
+        include: ['buffer', 'process', 'util', 'stream', 'path'],
         globals: {
           Buffer: true,
           process: true,
