@@ -94,6 +94,15 @@ export default defineConfig((config) => {
     build: {
       target: 'esnext',
       sourcemap: 'inline',
+      rollupOptions: {
+        external: (id) => {
+          // Externalize undici and its dependencies that might cause util/types issues
+          if (id.includes('undici') || id === 'util/types') {
+            return true;
+          }
+          return false;
+        }
+      }
     },
     optimizeDeps: {
       include: ['react', 'react-dom', 'react-dom/server'],
