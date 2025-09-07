@@ -120,21 +120,17 @@ export default defineConfig((config) => {
         },
       },
       {
-        name: 'util-types-polyfill',
+        name: 'node-polyfill-resolver',
         resolveId(id) {
-          if (id === 'util/types') {
-            // Try to find if the module exists first
-            try {
-              require.resolve('util/types');
-              return { id: 'node:util/types', external: true };
-            } catch {
-              // Fallback to polyfill
-              return this.resolve('vite-plugin-node-polyfills/shims/util/types');
-            }
+          // Handle util/types specifically
+          if (id === 'util/types' || id === './util/types' || id === '../util/types') {
+            return { id: 'node:util/types', external: true };
           }
 
-          if (id === 'node:util/types') {
-            return { id, external: true };
+          // Handle other Node.js core modules that might need externalization
+          const nodeModules = ['util', 'fs', 'crypto', 'path', 'os', 'http', 'https', 'url', 'querystring'];
+          if (nodeModules.some(mod => id.startsWith(mod))) {
+            return { id: `node:${id}`, external: true };
           }
 
           return null;
