@@ -1,4 +1,4 @@
-import { type ActionFunctionArgs } from '@remix-run/cloudflare';
+import { type ActionFunctionArgs } from '@remix-run/node';
 import { createDataStream, generateId } from 'ai';
 import { MAX_RESPONSE_SEGMENTS, MAX_TOKENS, type FileMap } from '~/lib/.server/llm/constants';
 import { CONTINUE_PROMPT } from '~/lib/common/prompts/prompts';
@@ -38,22 +38,7 @@ function parseCookies(cookieHeader: string): Record<string, string> {
 }
 
 async function chatAction({ context, request }: ActionFunctionArgs) {
-  const { messages, files, promptId, contextOptimization, supabase, chatMode, designScheme } = await request.json<{
-    messages: Messages;
-    files: any;
-    promptId?: string;
-    contextOptimization: boolean;
-    chatMode: 'discuss' | 'build';
-    designScheme?: DesignScheme;
-    supabase?: {
-      isConnected: boolean;
-      hasSelectedProject: boolean;
-      credentials?: {
-        anonKey?: string;
-        supabaseUrl?: string;
-      };
-    };
-  }>();
+  const { messages, files, promptId, contextOptimization, supabase, chatMode, designScheme } = await request.json();
 
   const cookieHeader = request.headers.get('Cookie');
   const apiKeys = JSON.parse(parseCookies(cookieHeader || '').apiKeys || '{}');
@@ -72,7 +57,7 @@ async function chatAction({ context, request }: ActionFunctionArgs) {
   let progressCounter: number = 1;
 
   try {
-    const totalMessageContent = messages.reduce((acc, message) => acc + message.content, '');
+    const totalMessageContent = messages.reduce((acc: string, message: Messages[0]) => acc + message.content, '');
     logger.debug(`Total message length: ${totalMessageContent.split(' ').length}, words`);
 
     let lastChunk: string | undefined = undefined;
@@ -103,7 +88,7 @@ async function chatAction({ context, request }: ActionFunctionArgs) {
 
           summary = await createSummary({
             messages: [...messages],
-            env: context.cloudflare?.env,
+            env: process.env,
             apiKeys,
             providerSettings,
             promptId,
@@ -145,8 +130,7 @@ async function chatAction({ context, request }: ActionFunctionArgs) {
           console.log(`Messages count: ${messages.length}`);
           filteredFiles = await selectContext({
             messages: [...messages],
-            env: context.cloudflare?.env,
-            apiKeys,
+            env: process.env,
             files,
             providerSettings,
             promptId,
@@ -232,7 +216,7 @@ async function chatAction({ context, request }: ActionFunctionArgs) {
 
             logger.info(`Reached max token limit (${MAX_TOKENS}): Continuing message (${switchesLeft} switches left)`);
 
-            const lastUserMessage = messages.filter((x) => x.role == 'user').slice(-1)[0];
+            const lastUserMessage = messages.filter((x: Messages[0]) => x.role == 'user').slice(-1)[0];
             const { model, provider } = extractPropertiesFromMessage(lastUserMessage);
             messages.push({ id: generateId(), role: 'assistant', content });
             messages.push({
@@ -243,7 +227,7 @@ async function chatAction({ context, request }: ActionFunctionArgs) {
 
             const result = await streamText({
               messages,
-              env: context.cloudflare?.env,
+              env: process.env,
               options,
               apiKeys,
               files,
@@ -284,7 +268,7 @@ async function chatAction({ context, request }: ActionFunctionArgs) {
 
         const result = await streamText({
           messages,
-          env: context.cloudflare?.env,
+          env: process.env,
           options,
           apiKeys,
           files,

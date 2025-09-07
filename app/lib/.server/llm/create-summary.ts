@@ -9,7 +9,7 @@ const logger = createScopedLogger('create-summary');
 
 export async function createSummary(props: {
   messages: Message[];
-  env?: Env;
+  env?: { [key: string]: string | undefined };
   apiKeys?: Record<string, string>;
   providerSettings?: Record<string, IProviderSetting>;
   promptId?: string;
@@ -110,7 +110,7 @@ ${summary.summary}`;
 - **Project**: {project_name} - {brief_description}
 - **Current Phase**: {phase}
 - **Tech Stack**: {languages}, {frameworks}, {key_dependencies}
-- **Environment**: {critical_env_details}
+- **{ [key: string]: string | undefined }ironment**: {critical_env_details}
 
 # Conversation Context
 - **Last Topic**: {main_discussion_point}

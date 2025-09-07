@@ -1,3 +1,5 @@
+# This Dockerfile is primarily for local Docker deployment
+# For Vercel deployment, this file is ignored via .vercelignore
 ARG BASE=node:20.18.0
 FROM ${BASE} AS base
 

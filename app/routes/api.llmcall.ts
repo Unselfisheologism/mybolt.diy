@@ -1,4 +1,4 @@
-import { type ActionFunctionArgs } from '@remix-run/cloudflare';
+import { type ActionFunctionArgs } from '@remix-run/node';
 import { streamText } from '~/lib/.server/llm/stream-text';
 import type { IProviderSetting, ProviderInfo } from '~/types/model';
 import { generateText } from 'ai';
@@ -18,20 +18,14 @@ async function getModelList(options: {
   providerSettings?: Record<string, IProviderSetting>;
   serverEnv?: Record<string, string>;
 }) {
-  const llmManager = LLMManager.getInstance(import.meta.env);
+  const llmManager = LLMManager.getInstance();
   return llmManager.updateModelList(options);
 }
 
 const logger = createScopedLogger('api.llmcall');
 
 async function llmCallAction({ context, request }: ActionFunctionArgs) {
-  const { system, message, model, provider, streamOutput } = await request.json<{
-    system: string;
-    message: string;
-    model: string;
-    provider: ProviderInfo;
-    streamOutput?: boolean;
-  }>();
+  const { system, message, model, provider, streamOutput } = await request.json();
 
   const { name: providerName } = provider;
 
@@ -66,7 +60,7 @@ async function llmCallAction({ context, request }: ActionFunctionArgs) {
             content: `${message}`,
           },
         ],
-        env: context.cloudflare?.env as any,
+        env: process.env as any,
         apiKeys,
         providerSettings,
       });
@@ -94,7 +88,7 @@ async function llmCallAction({ context, request }: ActionFunctionArgs) {
     }
   } else {
     try {
-      const models = await getModelList({ apiKeys, providerSettings, serverEnv: context.cloudflare?.env as any });
+      const models = await getModelList({ apiKeys, providerSettings, serverEnv: process.env as any });
       const modelDetails = models.find((m: ModelInfo) => m.name === model);
 
       if (!modelDetails) {
@@ -121,7 +115,7 @@ async function llmCallAction({ context, request }: ActionFunctionArgs) {
         ],
         model: providerInfo.getModelInstance({
           model: modelDetails.name,
-          serverEnv: context.cloudflare?.env as any,
+          serverEnv: process.env as any,
           apiKeys,
           providerSettings,
         }),

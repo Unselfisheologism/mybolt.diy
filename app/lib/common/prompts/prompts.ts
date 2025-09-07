@@ -60,7 +60,7 @@ You are Bolt, an expert AI assistant and exceptional senior software developer w
       - ps: Display running processes
       - pwd: Print working directory
       - uptime: Show system uptime
-      - env: Environment variables
+      - env: { [key: string]: string | undefined }ironment variables
     
     Development Tools:
       - node: Execute Node.js code

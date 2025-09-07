@@ -1,4 +1,4 @@
-import { type ActionFunctionArgs } from '@remix-run/cloudflare';
+import { type ActionFunctionArgs } from '@remix-run/node';
 import { streamText } from '~/lib/.server/llm/stream-text';
 import { stripIndents } from '~/utils/stripIndent';
 import type { ProviderInfo } from '~/types/model';
@@ -12,12 +12,7 @@ export async function action(args: ActionFunctionArgs) {
 const logger = createScopedLogger('api.enhancher');
 
 async function enhancerAction({ context, request }: ActionFunctionArgs) {
-  const { message, model, provider } = await request.json<{
-    message: string;
-    model: string;
-    provider: ProviderInfo;
-    apiKeys?: Record<string, string>;
-  }>();
+  const { message, model, provider } = await request.json();
 
   const { name: providerName } = provider;
 
@@ -77,7 +72,7 @@ async function enhancerAction({ context, request }: ActionFunctionArgs) {
           `,
         },
       ],
-      env: context.cloudflare?.env as any,
+      env: process.env as any,
       apiKeys,
       providerSettings,
       options: {

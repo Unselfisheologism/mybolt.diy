@@ -63,7 +63,7 @@ export default function ConnectionsTab() {
       {/* Diagnostics Tool - Conditionally rendered */}
       {showDiagnostics && <ConnectionDiagnostics />}
 
-      {/* Environment Variables Info - Collapsible */}
+      {/* { [key: string]: string | undefined }ironment Variables Info - Collapsible */}
       <motion.div
         className="bg-bolt-elements-background dark:bg-bolt-elements-background rounded-lg border border-bolt-elements-borderColor dark:border-bolt-elements-borderColor"
         initial={{ opacity: 0, y: 20 }}

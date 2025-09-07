@@ -1,0 +1,16 @@
+# Docker files for Vercel builds
+Dockerfile
+docker-compose.yaml
+.dockrrignore
+
+# Development files typically not needed for Vercel
+.cursorrules
+*.md
+docs/
+.qodo
+changelogUI.md
+
+# Electron build files
+electron/
+electron-builder.yml
+vite-electron.config.ts

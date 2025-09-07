@@ -66,7 +66,7 @@ export default class GroqProvider extends BaseProvider {
 
   getModelInstance(options: {
     model: string;
-    serverEnv: Env;
+    serverEnv: { [key: string]: string | undefined };
     apiKeys?: Record<string, string>;
     providerSettings?: Record<string, IProviderSetting>;
   }): LanguageModelV1 {

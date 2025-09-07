@@ -1,5 +1,5 @@
 import { useStore } from '@nanostores/react';
-import type { LinksFunction } from '@remix-run/cloudflare';
+import type { LinksFunction } from '@remix-run/node';
 import { Links, Meta, Outlet, Scripts, ScrollRestoration } from '@remix-run/react';
 import tailwindReset from '@unocss/reset/tailwind-compat.css?url';
 import { themeStore } from './lib/stores/theme';
@@ -15,6 +15,25 @@ import globalStyles from './styles/index.scss?url';
 import xtermStyles from '@xterm/xterm/css/xterm.css?url';
 
 import 'virtual:uno.css';
+
+// Puter.js Script Loader
+const inlinePuterLoaderCode = stripIndents`
+  // Load Puter.js SDK
+  (function() {
+    if (!window.puter && !document.querySelector('script[src*="js.puter.com"]')) {
+      const script = document.createElement('script');
+      script.src = 'https://js.puter.com/v2/';
+      script.async = true;
+      script.onload = function() {
+        console.log('Puter.js SDK loaded successfully');
+      };
+      script.onerror = function() {
+        console.warn('Failed to load Puter.js SDK');
+      };
+      document.head.appendChild(script);
+    }
+  })();
+`;
 
 export const links: LinksFunction = () => [
   {
@@ -62,6 +81,7 @@ export const Head = createHead(() => (
     <Meta />
     <Links />
     <script dangerouslySetInnerHTML={{ __html: inlineThemeCode }} />
+    <script dangerouslySetInnerHTML={{ __html: inlinePuterLoaderCode }} />
   </>
 ));
 

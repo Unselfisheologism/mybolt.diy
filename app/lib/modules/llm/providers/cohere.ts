@@ -27,7 +27,7 @@ export default class CohereProvider extends BaseProvider {
 
   getModelInstance(options: {
     model: string;
-    serverEnv: Env;
+    serverEnv: { [key: string]: string | undefined };
     apiKeys?: Record<string, string>;
     providerSettings?: Record<string, IProviderSetting>;
   }): LanguageModelV1 {
