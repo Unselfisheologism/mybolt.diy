@@ -97,7 +97,7 @@ export default defineConfig((config) => {
     },
     plugins: [
       nodePolyfills({
-        include: ['buffer', 'process', 'util', 'stream', 'path'],
+        include: ['buffer', 'process', 'util', 'stream', 'path', 'util/types'],
         globals: {
           Buffer: true,
           process: true,
@@ -114,6 +114,27 @@ export default defineConfig((config) => {
               code: `import { Buffer } from 'buffer';\n${code}`,
               map: null,
             };
+          }
+
+          return null;
+        },
+      },
+      {
+        name: 'util-types-polyfill',
+        resolveId(id) {
+          if (id === 'util/types') {
+            // Try to find if the module exists first
+            try {
+              require.resolve('util/types');
+              return { id: 'node:util/types', external: true };
+            } catch {
+              // Fallback to polyfill
+              return this.resolve('vite-plugin-node-polyfills/shims/util/types');
+            }
+          }
+
+          if (id === 'node:util/types') {
+            return { id, external: true };
           }
 
           return null;
