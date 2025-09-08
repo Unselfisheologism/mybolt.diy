@@ -105,7 +105,10 @@ export default defineConfig((config) => {
       }
     },
     optimizeDeps: {
-      include: ['react', 'react-dom', 'react-dom/server'],
+      include: ['react', 'react-dom/server', 'react-dom'],
+    },
+    ssr: {
+      noExternal: ['react', 'react-dom', 'react-dom/server'],
     },
     plugins: [
       nodePolyfills({
