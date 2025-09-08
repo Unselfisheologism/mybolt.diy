@@ -99,8 +99,8 @@ export default defineConfig((config) => {
       sourcemap: 'inline',
       rollupOptions: {
         external: (id) => {
-          // Externalize undici and its dependencies that might cause util/types issues
-          if (id.includes('undici') || id === 'util/types') {
+          // Externalize problematic dependencies for Vercel compatibility
+          if (id.includes('undici') || id === 'util/types' || id.includes('set-cookie-parser')) {
             return true;
           }
           return false;
