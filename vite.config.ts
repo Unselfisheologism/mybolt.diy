@@ -90,6 +90,9 @@ export default defineConfig((config) => {
       __PKG_PEER_DEPENDENCIES: JSON.stringify(pkg.peerDependencies),
       __PKG_OPTIONAL_DEPENDENCIES: JSON.stringify(pkg.optionalDependencies),
       'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
+      // Define global for browser compatibility
+      'global': 'globalThis',
+      'module': '{}',
     },
     build: {
       target: 'esnext',
@@ -112,7 +115,7 @@ export default defineConfig((config) => {
     },
     plugins: [
       nodePolyfills({
-        include: ['buffer', 'process', 'util', 'stream', 'path'],
+        include: ['buffer', 'process', 'util', 'stream', 'path', 'url', 'crypto'],
         globals: {
           Buffer: true,
           process: true,
@@ -123,7 +126,7 @@ export default defineConfig((config) => {
       }),
       {
         name: 'buffer-polyfill',
-        transform(code, id) {
+        transform(code: string, id: string) {
           if (id.includes('env.mjs')) {
             return {
               code: `import { Buffer } from 'buffer';\n${code}`,
@@ -136,19 +139,47 @@ export default defineConfig((config) => {
       },
       {
         name: 'node-polyfill-resolver',
-        resolveId(id) {
+        resolveId(id: string) {
           // Handle util/types specifically
           if (id === 'util/types' || id === './util/types' || id === '../util/types') {
             return { id: 'node:util/types', external: true };
           }
-
-          // Handle other Node.js core modules that might need externalization
-          const nodeModules = ['util', 'fs', 'crypto', 'path', 'os', 'http', 'https', 'url', 'querystring'];
-          if (nodeModules.some(mod => id.startsWith(mod))) {
-            return { id: `node:${id}`, external: true };
-          }
-
           return null;
+        },
+      },
+      {
+        name: 'textencoder-polyfill',
+        transformIndexHtml(html: string) {
+          const polyfillScript = `
+            <script>
+              if (typeof TextEncoder === 'undefined') {
+                ${`
+                  function TextEncoder() {}
+                  TextEncoder.prototype.encode = function(str) {
+                    var utf8 = encodeURIComponent(str).replace(/%([0-9A-F]{2})/g,
+                      function(match, p1) {
+                        return String.fromCharCode(parseInt(p1, 16));
+                      });
+                    var arr = new Uint8Array(utf8.length);
+                    for (var i = 0; i < utf8.length; i++) {
+                      arr[i] = utf8.charCodeAt(i);
+                    }
+                    return arr;
+                  };
+                  globalThis.TextEncoder = TextEncoder;
+
+                  function TextDecoder() {}
+                  TextDecoder.prototype.decode = function(bytes) {
+                    return decodeURIComponent(bytes.map(function(byte) {
+                      return '%' + byte.toString(16).padStart(2, '0');
+                    }).join(''));
+                  };
+                  globalThis.TextDecoder = TextDecoder;
+                `}
+              }
+            </script>
+          `;
+          return html.replace('<head>', `<head>${polyfillScript}`);
         },
       },
 
